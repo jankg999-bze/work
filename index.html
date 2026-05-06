@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Natural Selection vs. Random Chance</title>
 
   <style>
@@ -11,20 +12,41 @@
       background: #f3f4f6;
       margin: 0;
       padding: 20px;
+      overflow-y: auto;
     }
 
     h1 {
-      margin-bottom: 5px;
+      margin-bottom: 6px;
     }
 
-    button, select {
+    p {
+      line-height: 1.5;
+    }
+
+    button,
+    select {
       padding: 8px 12px;
       border-radius: 8px;
       border: 1px solid #999;
       cursor: pointer;
+      background: white;
     }
 
-    .tabs, .controls {
+    .instructions-box {
+      background: white;
+      border-radius: 16px;
+      padding: 22px;
+      margin: 20px 0;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      max-width: 1000px;
+    }
+
+    .instructions-box h2 {
+      margin-top: 0;
+    }
+
+    .tabs,
+    .controls {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
@@ -34,19 +56,26 @@
 
     .board {
       position: relative;
-      height: 420px;
+      height: 720px;
       border-radius: 20px;
       overflow: hidden;
       border: 2px solid #d1d5db;
+
       background-image: url("campus.jpg");
       background-size: cover;
       background-position: center;
+      background-repeat: no-repeat;
     }
 
     .frog {
       position: absolute;
       transform: translate(-50%, -50%);
       user-select: none;
+      transition: transform 0.2s ease;
+    }
+
+    .frog:hover {
+      transform: translate(-50%, -50%) scale(1.15);
     }
 
     .owl {
@@ -57,7 +86,7 @@
 
     .fallen-tree {
       position: absolute;
-      font-size: 44px;
+      font-size: 48px;
       transform: rotate(90deg);
     }
 
@@ -65,7 +94,7 @@
       position: absolute;
       left: 12px;
       top: 12px;
-      font-size: 36px;
+      font-size: 38px;
     }
 
     .badge {
@@ -73,9 +102,10 @@
       left: 12px;
       top: 12px;
       background: rgba(255,255,255,0.9);
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 12px;
       font-weight: bold;
+      z-index: 5;
     }
 
     .stats {
@@ -83,36 +113,68 @@
       grid-template-columns: 300px 1fr;
       gap: 16px;
       margin-top: 16px;
+      margin-bottom: 40px;
     }
 
     .panel {
       background: white;
       border-radius: 16px;
-      padding: 16px;
+      padding: 20px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.08);
     }
 
     svg {
       width: 100%;
-      height: 220px;
+      height: 300px;
       background: white;
     }
 
-    @media (max-width: 800px) {
+    @media (max-width: 900px) {
       .stats {
         grid-template-columns: 1fr;
       }
 
       .board {
-        height: 330px;
+        height: 520px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .board {
+        height: 420px;
       }
     }
   </style>
 </head>
 
 <body>
+
   <h1>Natural Selection vs. Random Chance</h1>
-  <p>Compare predator-driven selection, random storm mortality, and student hunting choices.</p>
+
+  <p>
+    Compare predator-driven selection, random storm mortality,
+    and student hunting choices.
+  </p>
+
+  <div class="instructions-box">
+    <h2>Instructions for prelab exercise</h2>
+
+    <p>
+      Placeholder words for now.
+    </p>
+
+    <p>
+      This section can later explain:
+    </p>
+
+    <ul>
+      <li>How to run the simulation</li>
+      <li>What natural selection means</li>
+      <li>How random chance differs from selection</li>
+      <li>What students should observe</li>
+      <li>Questions students should answer</li>
+    </ul>
+  </div>
 
   <div class="tabs">
     <button onclick="setTab('selection')">Natural Selection</button>
@@ -123,21 +185,29 @@
   <div class="controls">
     <label>
       Frogs:
+
       <select id="frogCount" onchange="resetSimulation()">
         <option value="10">10</option>
-        <option value="100" selected>100</option>
-        <option value="1000">1000</option>
+        <option value="100">100</option>
+        <option value="1000" selected>1000</option>
       </select>
     </label>
 
-    <button id="runButton" onclick="runSimulation()">Run Owls</button>
-    <button onclick="resetSimulation()">Reset</button>
+    <button id="runButton" onclick="runSimulation()">
+      Run Owls
+    </button>
+
+    <button onclick="resetSimulation()">
+      Reset
+    </button>
   </div>
 
   <div id="board" class="board"></div>
+
   <div id="stats"></div>
 
   <script>
+
     let tab = "selection";
     let frogs = [];
     let running = false;
@@ -164,6 +234,7 @@
 
     function seededRandom(seed) {
       let x = seed;
+
       return function () {
         x = (x * 1664525 + 1013904223) % 4294967296;
         return x / 4294967296;
@@ -171,7 +242,9 @@
     }
 
     function makeFrogs(count, seed = 1) {
+
       const rand = seededRandom(seed);
+
       const types = ["light", "dark", "blue"];
 
       return Array.from({ length: count }, (_, i) => ({
@@ -185,18 +258,27 @@
 
     function getFrogSize() {
       const count = frogs.length;
+
       if (count >= 1000) return 20;
-      if (count >= 100) return 30;
-      return 52;
+      if (count >= 100) return 32;
+
+      return 56;
     }
 
     function countFrogs(aliveOnly = false) {
-      const counts = { light: 0, dark: 0, blue: 0 };
+
+      const counts = {
+        light: 0,
+        dark: 0,
+        blue: 0
+      };
 
       frogs.forEach(frog => {
+
         if (!aliveOnly || frog.alive) {
           counts[frog.type]++;
         }
+
       });
 
       return counts;
@@ -208,44 +290,89 @@
     }
 
     function resetSimulation() {
+
       clearTimeout(timer);
+
       running = false;
+
       timeLeft = 10;
 
-      const count = Number(document.getElementById("frogCount").value);
-      const seed = tab === "selection" ? 11 : tab === "chance" ? 22 : 33;
+      const count =
+        Number(document.getElementById("frogCount").value);
+
+      const seed =
+        tab === "selection"
+          ? 11
+          : tab === "chance"
+          ? 22
+          : 33;
 
       frogs = makeFrogs(count, count + seed);
+
       updateRunButton();
+
       render();
     }
 
     function updateRunButton() {
-      const button = document.getElementById("runButton");
 
-      if (tab === "selection") button.textContent = running ? "Owls Hunting..." : "Run Owls";
-      if (tab === "chance") button.textContent = running ? "Storm Rolling..." : "Run Storm";
-      if (tab === "student") button.textContent = running ? "Round Active" : "Start Hunt";
+      const button =
+        document.getElementById("runButton");
+
+      if (tab === "selection") {
+        button.textContent =
+          running
+            ? "Owls Hunting..."
+            : "Run Owls";
+      }
+
+      if (tab === "chance") {
+        button.textContent =
+          running
+            ? "Storm Rolling..."
+            : "Run Storm";
+      }
+
+      if (tab === "student") {
+        button.textContent =
+          running
+            ? "Round Active"
+            : "Start Hunt";
+      }
     }
 
     function weightedVictims(fraction) {
-      const alive = frogs.filter(frog => frog.alive);
-      const target = Math.round(alive.length * fraction);
 
-      const pool = alive.map(frog => ({
-        id: frog.id,
-        weight: owlWeights[frog.type] + Math.random() * 0.6
-      }));
+      const alive =
+        frogs.filter(frog => frog.alive);
+
+      const target =
+        Math.round(alive.length * fraction);
+
+      const pool =
+        alive.map(frog => ({
+          id: frog.id,
+          weight:
+            owlWeights[frog.type]
+            + Math.random() * 0.6
+        }));
 
       const chosen = new Set();
 
       while (chosen.size < target && pool.length) {
-        const total = pool.reduce((sum, item) => sum + item.weight, 0);
+
+        const total =
+          pool.reduce((sum, item) =>
+            sum + item.weight, 0);
+
         let r = Math.random() * total;
+
         let idx = 0;
 
         for (let i = 0; i < pool.length; i++) {
+
           r -= pool[i].weight;
+
           if (r <= 0) {
             idx = i;
             break;
@@ -253,6 +380,7 @@
         }
 
         chosen.add(pool[idx].id);
+
         pool.splice(idx, 1);
       }
 
@@ -260,40 +388,69 @@
     }
 
     function randomVictims(fraction) {
-      const alive = frogs.filter(frog => frog.alive);
-      const target = Math.round(alive.length * fraction);
-      const shuffled = [...alive].sort(() => Math.random() - 0.5);
-      return new Set(shuffled.slice(0, target).map(frog => frog.id));
+
+      const alive =
+        frogs.filter(frog => frog.alive);
+
+      const target =
+        Math.round(alive.length * fraction);
+
+      const shuffled =
+        [...alive].sort(() =>
+          Math.random() - 0.5);
+
+      return new Set(
+        shuffled
+          .slice(0, target)
+          .map(frog => frog.id)
+      );
     }
 
     function runSimulation() {
+
       if (running) return;
 
       if (tab === "selection") runOwls();
+
       if (tab === "chance") runStorm();
+
       if (tab === "student") startStudentHunt();
     }
 
     function runOwls() {
+
       running = true;
+
       updateRunButton();
 
-      const victims = weightedVictims(0.4);
+      const victims =
+        weightedVictims(0.4);
+
       let owlCount = 0;
 
       function animateOwls() {
+
         renderOwls(owlCount);
+
         owlCount++;
 
         if (owlCount <= 20) {
-          timer = setTimeout(animateOwls, 250);
+
+          timer =
+            setTimeout(animateOwls, 250);
+
         } else {
+
           frogs = frogs.map(frog =>
-            victims.has(frog.id) ? { ...frog, alive: false } : frog
+            victims.has(frog.id)
+              ? { ...frog, alive: false }
+              : frog
           );
 
           running = false;
+
           updateRunButton();
+
           render();
         }
       }
@@ -302,25 +459,39 @@
     }
 
     function runStorm() {
+
       running = true;
+
       updateRunButton();
 
-      const victims = randomVictims(0.4);
+      const victims =
+        randomVictims(0.4);
+
       let treeCount = 0;
 
       function animateStorm() {
+
         renderTrees(treeCount);
+
         treeCount++;
 
         if (treeCount <= 6) {
-          timer = setTimeout(animateStorm, 350);
+
+          timer =
+            setTimeout(animateStorm, 350);
+
         } else {
+
           frogs = frogs.map(frog =>
-            victims.has(frog.id) ? { ...frog, alive: false } : frog
+            victims.has(frog.id)
+              ? { ...frog, alive: false }
+              : frog
           );
 
           running = false;
+
           updateRunButton();
+
           render();
         }
       }
@@ -329,46 +500,78 @@
     }
 
     function startStudentHunt() {
+
       running = true;
+
       timeLeft = 10;
+
       updateRunButton();
+
       render();
 
       timer = setInterval(() => {
+
         timeLeft--;
+
         render();
 
         if (timeLeft <= 0) {
+
           clearInterval(timer);
+
           running = false;
+
           updateRunButton();
+
           render();
         }
+
       }, 1000);
     }
 
     function render() {
-      const board = document.getElementById("board");
+
+      const board =
+        document.getElementById("board");
+
       board.innerHTML = "";
 
-      const frogSize = getFrogSize();
+      const frogSize =
+        getFrogSize();
 
       frogs.forEach(frog => {
+
         if (!frog.alive) return;
 
-        const img = document.createElement("img");
-        img.src = frogImages[frog.type];
+        const img =
+          document.createElement("img");
+
+        img.src =
+          frogImages[frog.type];
+
         img.className = "frog";
+
         img.style.left = frog.x + "%";
+
         img.style.top = frog.y + "%";
+
         img.style.width = frogSize + "px";
+
         img.title = frog.type;
 
         if (tab === "student") {
-          img.style.cursor = running ? "crosshair" : "default";
+
+          img.style.cursor =
+            running
+              ? "crosshair"
+              : "default";
+
           img.onclick = () => {
+
             if (!running) return;
+
             frog.alive = false;
+
             render();
           };
         }
@@ -377,9 +580,17 @@
       });
 
       if (tab === "student") {
-        const badge = document.createElement("div");
+
+        const badge =
+          document.createElement("div");
+
         badge.className = "badge";
-        badge.textContent = "Time Left: " + timeLeft + "s";
+
+        badge.textContent =
+          "Time Left: "
+          + timeLeft
+          + "s";
+
         board.appendChild(badge);
       }
 
@@ -387,110 +598,275 @@
     }
 
     function renderOwls(count) {
+
       render();
 
-      const board = document.getElementById("board");
+      const board =
+        document.getElementById("board");
 
       for (let i = 0; i < count; i++) {
-        const owl = document.createElement("img");
+
+        const owl =
+          document.createElement("img");
+
         owl.src = "owl.png";
+
         owl.className = "owl";
-        owl.style.left = (-8 + i * 6) + "%";
-        owl.style.top = (8 + ((i * 11) % 70)) + "%";
+
+        owl.style.left =
+          (-8 + i * 6) + "%";
+
+        owl.style.top =
+          (8 + ((i * 11) % 70)) + "%";
+
         board.appendChild(owl);
       }
     }
 
     function renderTrees(count) {
+
       render();
 
-      const board = document.getElementById("board");
+      const board =
+        document.getElementById("board");
 
-      const storm = document.createElement("div");
+      const storm =
+        document.createElement("div");
+
       storm.className = "storm";
+
       storm.textContent = "⛈️";
+
       board.appendChild(storm);
 
       for (let i = 0; i < count; i++) {
-        const tree = document.createElement("div");
-        tree.className = "fallen-tree";
+
+        const tree =
+          document.createElement("div");
+
+        tree.className =
+          "fallen-tree";
+
         tree.textContent = "🌲";
-        tree.style.left = (8 + i * 15) + "%";
-        tree.style.top = (18 + ((i * 7) % 35)) + "%";
+
+        tree.style.left =
+          (8 + i * 15) + "%";
+
+        tree.style.top =
+          (18 + ((i * 7) % 35)) + "%";
+
         board.appendChild(tree);
       }
     }
 
     function renderStats() {
-      const before = countFrogs(false);
-      const after = countFrogs(true);
+
+      const before =
+        countFrogs(false);
+
+      const after =
+        countFrogs(true);
 
       const maxVal = Math.max(
-        before.light, before.dark, before.blue,
-        after.light, after.dark, after.blue,
+        before.light,
+        before.dark,
+        before.blue,
+        after.light,
+        after.dark,
+        after.blue,
         1
       );
 
-      const lineY = value => 180 - (value / maxVal) * 140;
+      const lineY =
+        value =>
+          240 - (value / maxVal) * 180;
 
       const title =
-        tab === "selection" ? "Natural Selection Results" :
-        tab === "chance" ? "Random Chance Results" :
-        "Student Hunt Results";
+        tab === "selection"
+          ? "Natural Selection Results"
+          : tab === "chance"
+          ? "Random Chance Results"
+          : "Student Hunt Results";
 
       document.getElementById("stats").innerHTML = `
+
         <div class="stats">
+
           <div class="panel">
+
             <h3>${title}</h3>
 
             <p><b>Before</b></p>
+
             <p>Light Green: ${before.light}</p>
             <p>Dark Green: ${before.dark}</p>
             <p>Blue: ${before.blue}</p>
-            <p>Total: ${before.light + before.dark + before.blue}</p>
+
+            <p>
+              <b>Total:</b>
+              ${before.light + before.dark + before.blue}
+            </p>
 
             <p><b>After</b></p>
+
             <p>Light Green: ${after.light}</p>
             <p>Dark Green: ${after.dark}</p>
             <p>Blue: ${after.blue}</p>
-            <p>Total: ${after.light + after.dark + after.blue}</p>
+
+            <p>
+              <b>Total:</b>
+              ${after.light + after.dark + after.blue}
+            </p>
+
           </div>
 
           <div class="panel">
+
             <h3>Population Change</h3>
 
-            <svg viewBox="0 0 360 220">
-              <line x1="40" y1="20" x2="40" y2="180" stroke="#333"></line>
-              <line x1="40" y1="180" x2="320" y2="180" stroke="#333"></line>
+            <svg viewBox="0 0 420 300">
 
-              <text x="70" y="200" font-size="12">Before</text>
-              <text x="250" y="200" font-size="12">After</text>
+              <line
+                x1="50"
+                y1="30"
+                x2="50"
+                y2="240"
+                stroke="#333">
+              </line>
 
-              <polyline points="80,${lineY(before.light)} 260,${lineY(after.light)}" fill="none" stroke="${graphColors.light}" stroke-width="3"></polyline>
-              <polyline points="80,${lineY(before.dark)} 260,${lineY(after.dark)}" fill="none" stroke="${graphColors.dark}" stroke-width="3"></polyline>
-              <polyline points="80,${lineY(before.blue)} 260,${lineY(after.blue)}" fill="none" stroke="${graphColors.blue}" stroke-width="3"></polyline>
+              <line
+                x1="50"
+                y1="240"
+                x2="360"
+                y2="240"
+                stroke="#333">
+              </line>
 
-              <circle cx="80" cy="${lineY(before.light)}" r="4" fill="${graphColors.light}"></circle>
-              <circle cx="260" cy="${lineY(after.light)}" r="4" fill="${graphColors.light}"></circle>
+              <text
+                x="90"
+                y="270"
+                font-size="14">
+                Before
+              </text>
 
-              <circle cx="80" cy="${lineY(before.dark)}" r="4" fill="${graphColors.dark}"></circle>
-              <circle cx="260" cy="${lineY(after.dark)}" r="4" fill="${graphColors.dark}"></circle>
+              <text
+                x="270"
+                y="270"
+                font-size="14">
+                After
+              </text>
 
-              <circle cx="80" cy="${lineY(before.blue)}" r="4" fill="${graphColors.blue}"></circle>
-              <circle cx="260" cy="${lineY(after.blue)}" r="4" fill="${graphColors.blue}"></circle>
+              <polyline
+                points="
+                  110,${lineY(before.light)}
+                  290,${lineY(after.light)}
+                "
+                fill="none"
+                stroke="${graphColors.light}"
+                stroke-width="4">
+              </polyline>
+
+              <polyline
+                points="
+                  110,${lineY(before.dark)}
+                  290,${lineY(after.dark)}
+                "
+                fill="none"
+                stroke="${graphColors.dark}"
+                stroke-width="4">
+              </polyline>
+
+              <polyline
+                points="
+                  110,${lineY(before.blue)}
+                  290,${lineY(after.blue)}
+                "
+                fill="none"
+                stroke="${graphColors.blue}"
+                stroke-width="4">
+              </polyline>
+
+              <circle
+                cx="110"
+                cy="${lineY(before.light)}"
+                r="5"
+                fill="${graphColors.light}">
+              </circle>
+
+              <circle
+                cx="290"
+                cy="${lineY(after.light)}"
+                r="5"
+                fill="${graphColors.light}">
+              </circle>
+
+              <circle
+                cx="110"
+                cy="${lineY(before.dark)}"
+                r="5"
+                fill="${graphColors.dark}">
+              </circle>
+
+              <circle
+                cx="290"
+                cy="${lineY(after.dark)}"
+                r="5"
+                fill="${graphColors.dark}">
+              </circle>
+
+              <circle
+                cx="110"
+                cy="${lineY(before.blue)}"
+                r="5"
+                fill="${graphColors.blue}">
+              </circle>
+
+              <circle
+                cx="290"
+                cy="${lineY(after.blue)}"
+                r="5"
+                fill="${graphColors.blue}">
+              </circle>
+
             </svg>
 
             <p>
-              <span style="color:${graphColors.light}">■ Light Green</span>
-              <span style="color:${graphColors.dark}; margin-left: 12px;">■ Dark Green</span>
-              <span style="color:${graphColors.blue}; margin-left: 12px;">■ Blue</span>
+
+              <span style="color:${graphColors.light}">
+                ■ Light Green
+              </span>
+
+              <span
+                style="
+                  color:${graphColors.dark};
+                  margin-left:14px;
+                ">
+
+                ■ Dark Green
+
+              </span>
+
+              <span
+                style="
+                  color:${graphColors.blue};
+                  margin-left:14px;
+                ">
+
+                ■ Blue
+
+              </span>
+
             </p>
+
           </div>
+
         </div>
       `;
     }
 
     resetSimulation();
+
   </script>
+
 </body>
 </html>
