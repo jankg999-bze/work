@@ -151,7 +151,7 @@
       position: absolute;
       width: 70px;
       pointer-events: none;
-      z-index: 4;
+      z-index: 6;
     }
 
     .storm-cloud {
@@ -161,20 +161,31 @@
       top: 18px;
       transform: translateX(-50%);
       pointer-events: none;
-      z-index: 6;
+      z-index: 7;
       animation: stormFloat 1.2s ease-in-out infinite alternate;
+    }
+
+    .storm-cloud.hidden {
+      display: none;
     }
 
     .falling-tree {
       position: absolute;
       width: 360px;
       left: 50%;
-      top: 150px;
-      transform-origin: bottom center;
+      top: 250px;
+      transform-origin: 50% 92%;
       transform: translateX(-50%) rotate(0deg);
       pointer-events: none;
       z-index: 5;
-      animation: treeFall 1.6s ease-in forwards;
+    }
+
+    .falling-tree.fallen {
+      animation: treeFall 1.8s ease-in forwards;
+    }
+
+    .falling-tree.already-fallen {
+      transform: translateX(-50%) rotate(88deg);
     }
 
     @keyframes stormFloat {
@@ -359,6 +370,10 @@
     let timer = null;
     let timeLeft = 10;
 
+    let stormVisible = false;
+    let treeFallen = false;
+    let treeFalling = false;
+
     const frogImages = {
       light: "greenfrog.png",
       dark: "darkgreen.png",
@@ -444,6 +459,10 @@
       running = false;
       timeLeft = 10;
 
+      stormVisible = false;
+      treeFallen = false;
+      treeFalling = false;
+
       const count = Number(document.getElementById("frogCount").value);
 
       const seed =
@@ -467,7 +486,7 @@
       }
 
       if (tab === "chance") {
-        button.textContent = running ? "Storm Rolling..." : "Run Storm";
+        button.textContent = running ? "Storm Building..." : "Run Storm";
       }
 
       if (tab === "student") {
@@ -559,23 +578,35 @@
 
     function runStorm() {
       running = true;
+      stormVisible = true;
+      treeFalling = false;
+      treeFallen = false;
+
       updateRunButton();
+      render();
 
       const victims = randomVictims(0.4);
 
-      renderStorm();
-
       timer = setTimeout(() => {
-        frogs = frogs.map(frog =>
-          victims.has(frog.id)
-            ? { ...frog, alive: false }
-            : frog
-        );
-
-        running = false;
-        updateRunButton();
+        treeFalling = true;
         render();
-      }, 1700);
+
+        setTimeout(() => {
+          treeFalling = false;
+          treeFallen = true;
+
+          frogs = frogs.map(frog =>
+            victims.has(frog.id)
+              ? { ...frog, alive: false }
+              : frog
+          );
+
+          running = false;
+          updateRunButton();
+          render();
+        }, 1900);
+
+      }, 5000);
     }
 
     function startStudentHunt() {
@@ -601,6 +632,8 @@
     function render() {
       const board = document.getElementById("board");
       board.innerHTML = "";
+
+      renderTreeAndStorm();
 
       const frogSize = getFrogSize();
 
@@ -638,6 +671,34 @@
       renderStats();
     }
 
+    function renderTreeAndStorm() {
+      if (tab !== "chance") return;
+
+      const board = document.getElementById("board");
+
+      const tree = document.createElement("img");
+      tree.src = "tree.jpg";
+      tree.className = "falling-tree";
+
+      if (treeFalling) {
+        tree.classList.add("fallen");
+      }
+
+      if (treeFallen) {
+        tree.classList.add("already-fallen");
+      }
+
+      board.appendChild(tree);
+
+      if (stormVisible) {
+        const storm = document.createElement("img");
+        storm.src = "storm.jpg";
+        storm.className = "storm-cloud";
+        storm.alt = "storm cloud";
+        board.appendChild(storm);
+      }
+    }
+
     function renderOwls(count) {
       render();
 
@@ -652,25 +713,6 @@
 
         board.appendChild(owl);
       }
-    }
-
-    function renderStorm() {
-      render();
-
-      const board = document.getElementById("board");
-
-      const storm = document.createElement("img");
-      storm.src = "storm.jpg";
-      storm.className = "storm-cloud";
-      storm.alt = "storm cloud";
-
-      const tree = document.createElement("img");
-      tree.src = "tree.jpg";
-      tree.className = "falling-tree";
-      tree.alt = "falling tree";
-
-      board.appendChild(storm);
-      board.appendChild(tree);
     }
 
     function renderStats() {
