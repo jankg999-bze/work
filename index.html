@@ -88,11 +88,16 @@
       align-items: start;
     }
 
-    .main-header {
+    .main-header,
+    .instructions-box,
+    .panel {
       background: white;
       border-radius: 16px;
-      padding: 18px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    }
+
+    .main-header {
+      padding: 18px;
     }
 
     .main-header h1 {
@@ -100,10 +105,7 @@
     }
 
     .instructions-box {
-      background: white;
-      border-radius: 16px;
       padding: 20px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
       position: sticky;
       top: 20px;
     }
@@ -138,6 +140,7 @@
       transform: translate(-50%, -50%);
       user-select: none;
       transition: transform 0.2s ease;
+      z-index: 2;
     }
 
     .frog:hover {
@@ -148,19 +151,48 @@
       position: absolute;
       width: 70px;
       pointer-events: none;
+      z-index: 4;
     }
 
-    .fallen-tree {
+    .storm-cloud {
       position: absolute;
-      font-size: 48px;
-      transform: rotate(90deg);
+      width: 260px;
+      left: 50%;
+      top: 18px;
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 6;
+      animation: stormFloat 1.2s ease-in-out infinite alternate;
     }
 
-    .storm {
+    .falling-tree {
       position: absolute;
-      left: 12px;
-      top: 12px;
-      font-size: 38px;
+      width: 360px;
+      left: 50%;
+      top: 150px;
+      transform-origin: bottom center;
+      transform: translateX(-50%) rotate(0deg);
+      pointer-events: none;
+      z-index: 5;
+      animation: treeFall 1.6s ease-in forwards;
+    }
+
+    @keyframes stormFloat {
+      from {
+        transform: translateX(-50%) translateY(0);
+      }
+      to {
+        transform: translateX(-50%) translateY(10px);
+      }
+    }
+
+    @keyframes treeFall {
+      0% {
+        transform: translateX(-50%) rotate(0deg);
+      }
+      100% {
+        transform: translateX(-50%) rotate(88deg);
+      }
     }
 
     .badge {
@@ -183,10 +215,7 @@
     }
 
     .panel {
-      background: white;
-      border-radius: 16px;
       padding: 20px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
     }
 
     svg {
@@ -217,6 +246,14 @@
       .landing-content h1 {
         font-size: 44px;
       }
+
+      .falling-tree {
+        width: 260px;
+      }
+
+      .storm-cloud {
+        width: 210px;
+      }
     }
 
     @media (max-width: 600px) {
@@ -231,6 +268,14 @@
 
       .landing-content h1 {
         font-size: 36px;
+      }
+
+      .falling-tree {
+        width: 210px;
+      }
+
+      .storm-cloud {
+        width: 170px;
       }
     }
   </style>
@@ -517,28 +562,20 @@
       updateRunButton();
 
       const victims = randomVictims(0.4);
-      let treeCount = 0;
 
-      function animateStorm() {
-        renderTrees(treeCount);
-        treeCount++;
+      renderStorm();
 
-        if (treeCount <= 6) {
-          timer = setTimeout(animateStorm, 350);
-        } else {
-          frogs = frogs.map(frog =>
-            victims.has(frog.id)
-              ? { ...frog, alive: false }
-              : frog
-          );
+      timer = setTimeout(() => {
+        frogs = frogs.map(frog =>
+          victims.has(frog.id)
+            ? { ...frog, alive: false }
+            : frog
+        );
 
-          running = false;
-          updateRunButton();
-          render();
-        }
-      }
-
-      animateStorm();
+        running = false;
+        updateRunButton();
+        render();
+      }, 1700);
     }
 
     function startStudentHunt() {
@@ -617,25 +654,23 @@
       }
     }
 
-    function renderTrees(count) {
+    function renderStorm() {
       render();
 
       const board = document.getElementById("board");
 
-      const storm = document.createElement("div");
-      storm.className = "storm";
-      storm.textContent = "⛈️";
+      const storm = document.createElement("img");
+      storm.src = "storm.jpg";
+      storm.className = "storm-cloud";
+      storm.alt = "storm cloud";
+
+      const tree = document.createElement("img");
+      tree.src = "tree.jpg";
+      tree.className = "falling-tree";
+      tree.alt = "falling tree";
+
       board.appendChild(storm);
-
-      for (let i = 0; i < count; i++) {
-        const tree = document.createElement("div");
-        tree.className = "fallen-tree";
-        tree.textContent = "🌲";
-        tree.style.left = (8 + i * 15) + "%";
-        tree.style.top = (18 + ((i * 7) % 35)) + "%";
-
-        board.appendChild(tree);
-      }
+      board.appendChild(tree);
     }
 
     function renderStats() {
